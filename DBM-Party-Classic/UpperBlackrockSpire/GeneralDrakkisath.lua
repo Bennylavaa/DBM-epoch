@@ -9,7 +9,7 @@ local MOLTEN_ENGULFMENT_ID = 85990
 local FLAMESTRIKE_ID = 85978
 local CHARRED_GROUND_ID = 85985
 
-mod:SetRevision("20250918224203")
+mod:SetRevision("20250919120310")
 mod:SetCreatureID(BOSS_CREATURE_ID)
 mod:SetUsedIcons(1)
 
@@ -24,18 +24,17 @@ mod:RegisterEventsInCombat(
 )
 
 local conflagrationWarn			= mod:NewTargetNoFilterAnnounce(CONFLAGRATION_ID, 2)
-local conflagrationTimer		= mod:NewTargetTimer(CONFLAGRATION_DURATION, CONFLAGRATION_ID, nil, nil, nil, 3)
+local conflagrationTimer		= mod:NewTargetTimer(CONFLAGRATION_DURATION, CONFLAGRATION_ID, nil, false, nil, 3)
 local conflagrationSay			= mod:NewYell(CONFLAGRATION_ID)
 local conflagrationCDTimer		= mod:NewAITimer(CONFLAGRATION_CD, CONFLAGRATION_ID, nil, nil, nil, 3)
 
 local moltenEngulfmentWarn		= mod:NewSpecialWarningSpell(MOLTEN_ENGULFMENT_ID, nil, nil, nil, 2, 2)
 
-local charredGroundWarnGTFO		= mod:NewSpecialWarningGTFO(CHARRED_GROUND_ID, nil, nil, nil, 1, 8)
+local charredGroundWarnGTFO		= mod:NewSpecialWarningMove(CHARRED_GROUND_ID, nil, nil, nil, 1, 8)
 
 local flamestrikeWarn			= mod:NewSpecialWarningInterrupt(FLAMESTRIKE_ID, "HasInterrupt", nil, 2, 1, 2)
 
 mod:AddSetIconOption("SetIconOnConflagration", CONFLAGRATION_ID, true, false, {1})
-
 
 function mod:SPELL_AURA_APPLIED(args)
 	if args.spellId == CONFLAGRATION_ID then
@@ -72,8 +71,8 @@ function mod:SPELL_CAST_START(args)
 end
 
 function mod:SPELL_PERIODIC_DAMAGE(_, _, _, destGUID, _, _, spellId, spellName)
-	if spellId == charredGroundWarnGTFO and destGUID == UnitGUID("player") and self:AntiSpam(3, 2) then
-		charredGroundWarnGTFO:Show(spellName)
+	if spellId == CHARRED_GROUND_ID and destGUID == UnitGUID("player") and self:AntiSpam(3, 1) then
+		charredGroundWarnGTFO:Show()
 		charredGroundWarnGTFO:Play("watchfeet")
 	end
 end
