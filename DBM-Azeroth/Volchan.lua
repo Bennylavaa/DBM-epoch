@@ -6,8 +6,8 @@ local BURNING_SOUL_ID = 87658
 local BURNING_SOUL_DURATION = 10
 local CALL_OF_EMBERS_ID = 87659
 
-mod:SetRevision("20250928132907")
-mod:SetCreatureID(10119)
+mod:SetRevision("20250928212636")
+mod:SetCreatureID(46602)
 mod:SetUsedIcons(1)
 
 mod:RegisterCombat("combat")

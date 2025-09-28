@@ -12,7 +12,7 @@
 ## X-DBM-Mod-Name: World Bosses
 ## X-DBM-Mod-Sort: 1106
 ## X-DBM-Mod-MapID: 30
-## X-DBM-Mod-LoadCID: 10119
+## X-DBM-Mod-LoadCID: 46602
 
 localization.en.lua
 
