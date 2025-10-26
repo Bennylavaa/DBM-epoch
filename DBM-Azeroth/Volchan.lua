@@ -2,6 +2,8 @@ local mod	= DBM:NewMod("Volchan", "DBM-Azeroth")
 local L		= mod:GetLocalizedStrings()
 
 local ANCIENT_FLAME_ID = 87656
+local ANCIENT_FLAME_CD = 30
+local ANCIENT_FLAME_CD_PULL = 10
 local BURNING_SOUL_ID = 87658
 local BURNING_SOUL_DURATION = 10
 local CALL_OF_EMBERS_ID = 87659
@@ -23,6 +25,7 @@ mod:RegisterEventsInCombat(
 )
 
 local ancientFlameWarn			= mod:NewSpecialWarningSwitch(ANCIENT_FLAME_ID, nil, nil, nil, 1, 2)
+local ancientFlameCDTimer		= mod:NewAITimer(ANCIENT_FLAME_CD, ANCIENT_FLAME_ID, nil, false, nil, 1)
 
 local burningSoulWarn			= mod:NewSpecialWarningTarget(BURNING_SOUL_ID, nil, nil, nil, 1, 2)
 local burningSoulYell			= mod:NewYell(BURNING_SOUL_ID)
@@ -38,6 +41,7 @@ mod:AddSetIconOption("SetIconOnBurningSoul", BURNING_SOUL_ID, true, false, {1})
 
 function mod:OnCombatStart()
 	moltenAgonyCDTimer:Start()
+	ancientFlameCDTimer:Start(ANCIENT_FLAME_CD_PULL)
 end
 
 function mod:SPELL_AURA_APPLIED(args)
@@ -79,6 +83,7 @@ function mod:SPELL_CAST_SUCCESS(args)
 	if args.spellId == ANCIENT_FLAME_ID then
 		ancientFlameWarn:Show()
 		ancientFlameWarn:Play("killmob")
+		ancientFlameCDTimer:Start()
 	end
 end
 
