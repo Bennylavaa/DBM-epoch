@@ -38,6 +38,7 @@ mod:RegisterCombat("combat")
 mod:RegisterEventsInCombat(
 	"SPELL_CAST_START 150038 150053 150121 150040 150123 150049 150118 150120",
 	"SPELL_CAST_SUCCESS 150053 150049 150118",
+	"UNIT_HEALTH",
 	"UNIT_DIED"
 )
 
@@ -65,10 +66,13 @@ local implodeCastTimer			= mod:NewCastTimer(IMPLODE_CAST_TIME, IMPLODE_ID, nil, 
 local explodeWarn				= mod:NewSpecialWarningSpell(EXPLODE_ID, nil, nil, nil, 2, 2)
 local explodeCastTimer			= mod:NewCastTimer(EXPLODE_CAST_TIME, EXPLODE_ID, nil, nil, nil, 2)
 
+local magmaweaverHealth = 0
+
 -- mod:AddSetIconOption("SetIconOnPyroblast", PYROBLAST_ID, true, false, {1})
 mod:AddSetIconOption("SetIconOnArcaneDecimate", ARCANE_DECIMATE_ID, true, false, {1})
 mod:AddSetIconOption("SetIconOnImplode", IMPLODE_ID, true, false, {1})
 mod:AddRangeFrameOption(10, EXPLODE_ID)
+mod:AddInfoFrameOption(COLLAPSE_LAIR_ID, true)
 
 -- function mod:PyroblastTarget(targetName)
 -- 	if not targetName then return end
@@ -107,8 +111,19 @@ function mod:ImplodeTarget(targetName)
 	end
 end
 
+local function UpdateMagmaweaverHealth()
+	local str = string.format("Health: %.2f%%", magmaweaverHealth)
+	return {str}, {str}
+end
+
 function mod:OnCombatStart()
 	manaGemsTimer:Start()
+end
+
+function mod:OnCombatEnd()
+	if self.Options.InfoFrame then
+		DBM.InfoFrame:Hide()
+	end
 end
 
 function mod:SPELL_CAST_START(args)
@@ -121,6 +136,11 @@ function mod:SPELL_CAST_START(args)
 	elseif args.spellId == SUMMON_DRAGONKIN_ID then
 		summonDragonkinWarn:Show()
 		summonDragonkinWarn:Play("bigmob")
+		magmaweaverHealth = 100.0
+		if self.Options.InfoFrame then
+			DBM.InfoFrame:SetHeader("Onyxian Magmaweaver")
+			DBM.InfoFrame:Show(1, "function", UpdateMagmaweaverHealth, false, false)
+		end
 	elseif args.spellId == ARCANE_DECIMATE_ID then
 		self:BossTargetScanner(args.sourceGUID, "ArcaneDecimateTarget", 0.1, 8)
 	elseif args.spellId == COLLAPSE_LAIR_ID then
@@ -156,9 +176,21 @@ function mod:SPELL_CAST_SUCCESS(args)
 	end
 end
 
+function mod:UNIT_HEALTH(uId)
+	local cid = self:GetCIDFromGUID(args.destGUID)
+	if cid ~= DRAGONKIN_CID then
+		return
+	end
+
+	magmaweaverHealth = UnitHealth(uId) / UnitHealthMax(uId) * 100.0
+end
+
 function mod:UNIT_DIED(args)
 	local cid = self:GetCIDFromGUID(args.destGUID)
 	if cid == DRAGONKIN_CID then
 		collpaseLairCastTimer:Stop()
+		if self.Options.InfoFrame then
+			DBM.InfoFrame:Hide()
+		end
 	end
 end
