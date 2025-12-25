@@ -72,7 +72,7 @@ local magmaweaverHealth = 0
 -- mod:AddSetIconOption("SetIconOnPyroblast", PYROBLAST_ID, true, false, {1})
 mod:AddSetIconOption("SetIconOnArcaneDecimate", ARCANE_DECIMATE_ID, true, false, {1})
 mod:AddSetIconOption("SetIconOnImplode", IMPLODE_ID, true, false, {1})
-mod:AddRangeFrameOption(10, EXPLODE_ID)
+mod:AddRangeFrameOption(EXPLODE_RANGE, EXPLODE_ID)
 mod:AddInfoFrameOption(COLLAPSE_LAIR_ID, true)
 
 -- function mod:PyroblastTarget(targetName)
