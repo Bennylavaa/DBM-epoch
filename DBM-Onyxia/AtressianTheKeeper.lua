@@ -25,6 +25,7 @@ local RITUAL_FLAMES_TIMER = 8
 
 local EXPLODE_ID = 150118
 local EXPLODE_CAST_TIME = 6
+local EXPLODE_RANGE = 6
 
 local IMPLODE_ID = 150120
 local IMPLODE_CAST_TIME = 6
@@ -154,7 +155,7 @@ function mod:SPELL_CAST_START(args)
 		self:BossTargetScanner(args.sourceGUID, "ImplodeTarget", 0.1, 8)
 	elseif args.spellId == EXPLODE_ID then
 		if self.Options.RangeFrame then
-			DBM.RangeCheck:Show(10, nil, 10)
+			DBM.RangeCheck:Show(EXPLODE_RANGE, nil, true)
 		end
 
 		explodeWarn:Show()
