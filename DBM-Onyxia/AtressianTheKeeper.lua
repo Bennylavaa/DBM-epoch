@@ -1,6 +1,9 @@
 local mod	= DBM:NewMod("Atressian", "DBM-Onyxia")
 local L		= mod:GetLocalizedStrings()
 
+-- todo
+-- dragonkin info frame not working?
+
 local PYROBLAST_ID = 150038
 local PYROBLAST_CAST_TIME = 6
 
@@ -17,7 +20,8 @@ local COLLAPSE_LAIR_ID = 150123
 local COLLAPSE_LAIR_CAST_TIME = 30
 local DRAGONKIN_CID = 300065 -- Onyxian Magmaweaver
 
-local DRAGONKINS_RIGHT_ID = 150049
+local DRAGONKINS_RIGHT_ID = 150063
+local DRAGONKINS_RIGHT_ID2 = 150049
 local DRAGONKINS_RIGHT_CAST_TIME = 5
 
 local RITUAL_FLAMES_ID = 150051
@@ -30,15 +34,15 @@ local EXPLODE_RANGE = 6
 local IMPLODE_ID = 150120
 local IMPLODE_CAST_TIME = 6
 
-mod:SetRevision("20251223004610")
+mod:SetRevision("20251227232730")
 mod:SetCreatureID(45125)
 mod:SetUsedIcons(1)
 
 mod:RegisterCombat("combat")
 
 mod:RegisterEventsInCombat(
-	"SPELL_CAST_START 150038 150053 150121 150040 150123 150049 150118 150120",
-	"SPELL_CAST_SUCCESS 150053 150049 150118",
+	"SPELL_CAST_START 150038 150053 150121 150040 150123 150063 150049 150118 150120",
+	"SPELL_CAST_SUCCESS 150063 150049 150118",
 	"UNIT_HEALTH",
 	"UNIT_DIED"
 )
@@ -143,16 +147,16 @@ function mod:SPELL_CAST_START(args)
 			DBM.InfoFrame:Show(1, "function", UpdateMagmaweaverHealth, false, false)
 		end
 	elseif args.spellId == ARCANE_DECIMATE_ID then
-		self:BossTargetScanner(args.sourceGUID, "ArcaneDecimateTarget", 0.1, 8)
+		self:BossTargetScanner(args.sourceGUID, "ArcaneDecimateTarget", 0.25, 8)
 	elseif args.spellId == COLLAPSE_LAIR_ID then
 		collpaseLairCastTimer:Start()
 		collpaseLairWarn:Show()
-	elseif args.spellId == DRAGONKINS_RIGHT_ID then
+	elseif args.spellId == DRAGONKINS_RIGHT_ID or args.spellId == DRAGONKINS_RIGHT_ID2 then
 		dragonkinsRightWarn:Show()
 		dragonkinsRightWarn:Play("phasechange")
 		dragonkinsRightCastTimer:Start()
 	elseif args.spellId == IMPLODE_ID then
-		self:BossTargetScanner(args.sourceGUID, "ImplodeTarget", 0.1, 8)
+		self:BossTargetScanner(args.sourceGUID, "ImplodeTarget", 0.25, 8)
 	elseif args.spellId == EXPLODE_ID then
 		if self.Options.RangeFrame then
 			DBM.RangeCheck:Show(EXPLODE_RANGE, nil, true)
@@ -165,9 +169,7 @@ function mod:SPELL_CAST_START(args)
 end
 
 function mod:SPELL_CAST_SUCCESS(args)
-	if args.spellId == DRAGONKIN_SORCERY_ID then
-		manaGemsTimer:Start()
-	elseif args.spellId == DRAGONKINS_RIGHT_ID then
+	if args.spellId == DRAGONKINS_RIGHT_ID or args.spellId == DRAGONKINS_RIGHT_ID2 then
 		ritualFlamesTimer:Start()
 		dragonkinsRightWarn:Play("runintofire")
 	elseif args.spellId == EXPLODE_ID then

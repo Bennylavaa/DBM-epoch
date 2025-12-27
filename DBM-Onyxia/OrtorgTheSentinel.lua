@@ -3,7 +3,7 @@ local L		= mod:GetLocalizedStrings()
 
 -- Guttural Shout
 local SILENCE_ID = 85598
-local SILENCE_CD = 30
+local SILENCE_CD = 25
 
 local EMBER_BONDS_ID = 85596
 local EMBER_BONDS_CD = 30
@@ -19,7 +19,7 @@ local OVERWHELMING_UPHEAVAL_ID = 85609
 local OVERWHELMING_UPHEAVAL_CD = 90
 local OVERWHELMING_UPHEAVAL_NAME = "Overwhelming Upheaval"
 
-mod:SetRevision("20251223004610")
+mod:SetRevision("20251227232730")
 mod:SetCreatureID(45136)
 mod:SetUsedIcons(1, 2, 3, 4, 5, 6)
 
@@ -30,7 +30,8 @@ mod:RegisterEventsInCombat(
 	"SPELL_AURA_APPLIED_DOSE 85600",
 	"SPELL_AURA_REMOVED 85596 85595",
 	"SPELL_PERIODIC_DAMAGE 85592",
-	"SPELL_PERIODIC_MISSED 85592"
+	"SPELL_PERIODIC_MISSED 85592",
+	"SPELL_CAST_START 85598"
 )
 
 local silenceCDTimer				= mod:NewCDTimer(SILENCE_CD, SILENCE_ID, nil, nil, nil, 2)
@@ -137,3 +138,10 @@ function mod:SPELL_PERIODIC_DAMAGE(_, _, _, destGUID, _, _, spellId, spellName)
 end
 
 mod.SPELL_PERIODIC_MISSED = mod.SPELL_PERIODIC_DAMAGE
+
+function mod:SPELL_CAST_START(args)
+	if args.spellId == SILENCE_ID then
+		silenceCDTimer:Restart()
+		silencePreWarn:ScheduleVoice(SILENCE_CD, "silencesoon")
+	end
+end
