@@ -4,13 +4,14 @@ local L		= mod:GetLocalizedStrings()
 -- todo
 -- dragonkin info frame not working?
 
-local PYROBLAST_ID = 150038
-local PYROBLAST_CAST_TIME = 6
+-- local PYROBLAST_ID = 150038
+-- local PYROBLAST_CAST_TIME = 6
 
 local DRAGONKIN_SORCERY_ID = 150053
 local DRAGONKIN_SORCERY_CD = 90
 
 local SUMMON_DRAGONKIN_ID = 150121
+local SUMMON_DRAGONKIN_TRIGGER_ID = 150126
 local SUMMON_DRAGONKIN_CD = 50
 
 local ARCANE_DECIMATE_ID = 150040
@@ -28,21 +29,23 @@ local RITUAL_FLAMES_ID = 150051
 local RITUAL_FLAMES_TIMER = 8
 
 local EXPLODE_ID = 150118
+-- local EXPLODE_DEBUFF_ID = 150144
 local EXPLODE_CAST_TIME = 6
 local EXPLODE_RANGE = 6
 
 local IMPLODE_ID = 150120
 local IMPLODE_CAST_TIME = 6
 
-mod:SetRevision("20251228143030")
+mod:SetRevision("20251229153050")
 mod:SetCreatureID(45125)
 mod:SetUsedIcons(1)
 
 mod:RegisterCombat("combat")
 
 mod:RegisterEventsInCombat(
-	"SPELL_CAST_START 150038 150053 150121 150040 150123 150063 150049 150118 150120",
-	"SPELL_CAST_SUCCESS 150063 150049 150118",
+	"SPELL_CAST_START 150053 150121 150040 150123 150063 150049 150118 150120",
+	"SPELL_CAST_SUCCESS 150126",
+	-- "SPELL_AURA_REMOVED 150144",
 	"UNIT_HEALTH",
 	"UNIT_DIED"
 )
@@ -73,19 +76,10 @@ local explodeCastTimer			= mod:NewCastTimer(EXPLODE_CAST_TIME, EXPLODE_ID, nil, 
 
 local magmaweaverHealth = 0
 
--- mod:AddSetIconOption("SetIconOnPyroblast", PYROBLAST_ID, true, false, {1})
 mod:AddSetIconOption("SetIconOnArcaneDecimate", ARCANE_DECIMATE_ID, true, false, {1})
 mod:AddSetIconOption("SetIconOnImplode", IMPLODE_ID, true, false, {1})
 mod:AddRangeFrameOption(EXPLODE_RANGE, EXPLODE_ID)
 mod:AddInfoFrameOption(COLLAPSE_LAIR_ID, true)
-
--- function mod:PyroblastTarget(targetName)
--- 	if not targetName then return end
-
--- 	if self.Options.SetIconOnPyroblast then
--- 		self:SetIcon(targetName, 1, PYROBLAST_CAST_TIME)
--- 	end
--- end
 
 function mod:ArcaneDecimateTarget(targetName)
 	if not targetName then return end
@@ -132,15 +126,11 @@ function mod:OnCombatEnd()
 end
 
 function mod:SPELL_CAST_START(args)
-	if args.spellId == PYROBLAST_ID then
-		-- self:BossTargetScanner(args.sourceGUID, "PyroblastTarget", 0.1, 8)
-	elseif args.spellId == DRAGONKIN_SORCERY_ID then
+	if args.spellId == DRAGONKIN_SORCERY_ID then
 		manaGemsWarn:Show()
 		manaGemsWarn:Play("mobsoon")
 		summonDragonkinTimer:Start()
 	elseif args.spellId == SUMMON_DRAGONKIN_ID then
-		summonDragonkinWarn:Show()
-		summonDragonkinWarn:Play("bigmob")
 		magmaweaverHealth = 100.0
 		if self.Options.InfoFrame then
 			DBM.InfoFrame:SetHeader("Onyxian Magmaweaver")
@@ -153,8 +143,10 @@ function mod:SPELL_CAST_START(args)
 		collpaseLairWarn:Show()
 	elseif args.spellId == DRAGONKINS_RIGHT_ID or args.spellId == DRAGONKINS_RIGHT_ID2 then
 		dragonkinsRightWarn:Show()
-		dragonkinsRightWarn:Play("phasechange")
 		dragonkinsRightCastTimer:Start()
+		-- TODO Schedule this with the cast time but for now this mechanic is disabled anyway
+		-- dragonkinsRightWarn:Play("runintofire")
+		-- ritualFlamesTimer:Start()
 	elseif args.spellId == IMPLODE_ID then
 		self:BossTargetScanner(args.sourceGUID, "ImplodeTarget", 0.25, 8)
 	elseif args.spellId == EXPLODE_ID then
@@ -169,15 +161,19 @@ function mod:SPELL_CAST_START(args)
 end
 
 function mod:SPELL_CAST_SUCCESS(args)
-	if args.spellId == DRAGONKINS_RIGHT_ID or args.spellId == DRAGONKINS_RIGHT_ID2 then
-		ritualFlamesTimer:Start()
-		-- dragonkinsRightWarn:Play("runintofire")
-	elseif args.spellId == EXPLODE_ID then
-		if self.Options.RangeFrame then
-			DBM.RangeCheck:Hide(true)
-		end
+	if args.spellId == SUMMON_DRAGONKIN_TRIGGER_ID then
+		summonDragonkinWarn:Show()
+		summonDragonkinWarn:Play("bigmob")
 	end
 end
+
+-- function mod:SPELL_AURA_REMOVED(args)
+-- 	if args.spellId == EXPLODE_DEBUFF_ID then
+-- 		if args:IsPlayer() and self.Options.RangeFrame then
+-- 			DBM.RangeCheck:Hide(true)
+-- 		end
+-- 	end
+-- end
 
 function mod:UNIT_HEALTH(uId)
 	local cid = self:GetUnitCreatureId(uId)
