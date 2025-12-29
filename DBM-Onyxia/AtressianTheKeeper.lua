@@ -180,7 +180,7 @@ function mod:SPELL_CAST_SUCCESS(args)
 end
 
 function mod:UNIT_HEALTH(uId)
-	local cid = self:GetCIDFromGUID(args.destGUID)
+	local cid = self:GetUnitCreatureId(uId)
 	if cid ~= DRAGONKIN_CID then
 		return
 	end
