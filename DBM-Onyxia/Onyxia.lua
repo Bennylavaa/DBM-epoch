@@ -7,18 +7,18 @@ local FLAME_BREATH_ID = 18435
 local FLAME_BREATH_CD = 13.3
 
 local DEEP_BREATH_ID = 18584
-local DEEP_BREATH_CD = 33
+-- local DEEP_BREATH_CD = 33
 local DEEP_BREATH_CAST_TIME = 4
 
 local FIREBALL_ID = 18392
 
-mod:SetRevision("20251227232730")
+mod:SetRevision("20251229153050")
 mod:SetCreatureID(45133)
 mod:RegisterCombat("combat")
 mod:SetUsedIcons(1)
 
 mod:RegisterEventsInCombat(
-	"SPELL_CAST_START 18435 18584 18392",
+	"SPELL_CAST_START 18435 18392 18351 17086 18564 18576 18584 18596 18609 18617",
 	"CHAT_MSG_MONSTER_YELL",
 	"UNIT_HEALTH"
 )
@@ -30,7 +30,7 @@ local flyPhaseWarn			= mod:NewPhaseAnnounce(2)
 
 local flameBreathCD			= mod:NewCDTimer(FLAME_BREATH_CD, FLAME_BREATH_ID, nil, nil, nil, 5)
 
-local deepBreathCD			= mod:NewCDTimer(DEEP_BREATH_CD, DEEP_BREATH_ID, nil, nil, nil, 2)
+-- local deepBreathCD			= mod:NewCDTimer(DEEP_BREATH_CD, DEEP_BREATH_ID, nil, nil, nil, 2)
 local deepBreathWarn		= mod:NewSpecialWarningSpell(DEEP_BREATH_ID, nil, nil, nil, 2, 2)
 local deepBreathCastTimer	= mod:NewCastTimer(DEEP_BREATH_CAST_TIME, DEEP_BREATH_ID, nil, nil, nil, 2)
 
@@ -66,12 +66,16 @@ function mod:SPELL_CAST_START(args)
 	if args.spellId == FLAME_BREATH_ID then
 		flameBreathCD:Start()
 	-- One for each direction
-	elseif args:IsSpellID(17086, 18351, 18564, 18576) or args:IsSpellID(18584, 18596, 18609, 18617) then
+	elseif args:IsSpellID(18351, 17086, 18564, 18576, 18584, 18596, 18609, 18617) then
 		deepBreathWarn:Show()
+		deepBreathWarn:Play("breathsoon")
 		deepBreathCastTimer:Start()
-		deepBreathCD:Start()
+		-- deepBreathCD:Start()
 	elseif args.spellId == FIREBALL_ID then
-		self:BossTargetScanner(args.sourceGUID, "FireballTarget", 0.35, 8)
+		self:SendSync("Fireball", args.sourceGUID)
+		if self:AntiSpam(3, 1) then
+			self:BossTargetScanner(args.sourceGUID, "FireballTarget", 0.3, 6)
+		end
 	end
 end
 
@@ -110,15 +114,18 @@ function mod:UNIT_HEALTH(uId)
 	end
 end
 
-function mod:OnSync(msg)
+function mod:OnSync(msg, guid, sender)
 	if not self:IsInCombat() then return end
+
 	if msg == "Phase2" then
 		flyPhaseWarn:Show()
 		flameBreathCD:Stop()
-		deepBreathCD:Start()
+		-- deepBreathCD:Start()
 	elseif msg == "Phase1" then
 		groundPhaseWarn:Show()
-		deepBreathCD:Stop()
+		-- deepBreathCD:Stop()
+	elseif msg == "Fireball" and sender and self:AntiSpam(3, 1) then
+		self:BossTargetScanner(guid, "FireballTarget", 0.3, 6)
 	end
 end
 
