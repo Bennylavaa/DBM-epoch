@@ -9,6 +9,13 @@ L:SetGeneralLocalization({
 	name = "Ortorg the Sentinel"
 })
 
+L:SetMiscLocalization({
+	YellP2_1 = "None will reach the broodmother!",
+	YellP2_2 = "You will all be crushed under my might!",
+	YellP2_3 = "Give in and kneel!",
+	YellP2_4 = "I tire of these games, this ends now!",
+})
+
 ----------------------------
 --  Atressian the Keeper  --
 ----------------------------

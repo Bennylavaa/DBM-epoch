@@ -17,55 +17,72 @@ local LAVA_SLASH_HIGHSTACK = 2
 -- This is set to not log
 local OVERWHELMING_UPHEAVAL_ID = 85609
 local OVERWHELMING_UPHEAVAL_CD = 90
-local OVERWHELMING_UPHEAVAL_NAME = "Overwhelming Upheaval"
+local OVERWHELMING_UPHEAVAL_CD2 = 105
 
-mod:SetRevision("20251227232730")
+local P2_MOLTEN_UPHEAVAL_ID = 85603
+local P2_MOLTEN_UPHEAVAL_CAST_TIME = 3.5
+
+mod:SetRevision("20251229153050")
 mod:SetCreatureID(45136)
 mod:SetUsedIcons(1, 2, 3, 4, 5, 6)
 
 mod:RegisterCombat("combat")
 
 mod:RegisterEventsInCombat(
-	"SPELL_AURA_APPLIED 85596 85595 85600 85609",
+	"SPELL_AURA_APPLIED 85596 85595 85600",
 	"SPELL_AURA_APPLIED_DOSE 85600",
 	"SPELL_AURA_REMOVED 85596 85595",
 	"SPELL_PERIODIC_DAMAGE 85592",
 	"SPELL_PERIODIC_MISSED 85592",
-	"SPELL_CAST_START 85598"
+	"SPELL_CAST_START 85598 85603",
+	"CHAT_MSG_MONSTER_YELL"
 )
 
-local silenceCDTimer				= mod:NewCDTimer(SILENCE_CD, SILENCE_ID, nil, nil, nil, 2)
-local silencePreWarn				= mod:NewPreWarnAnnounce(SILENCE_ID, SILENCE_CD, 2)
+local silenceCDTimer	= mod:NewCDTimer(SILENCE_CD, SILENCE_ID, nil, nil, nil, 2)
+-- local silencePreWarn	= mod:NewPreWarnAnnounce(SILENCE_ID, SILENCE_CD, 2)
 
-local emberBondsWarn				= mod:NewSpecialWarningTarget(EMBER_BONDS_ID, nil, nil, nil, 1, 2)
-local emberBondsYell				= mod:NewYell(EMBER_BONDS_ID)
-local emberBondsMove				= mod:NewSpecialWarningMoveAway(EMBER_BONDS_ID, nil, nil, nil, 4, 2)
-local cripplingBondsFadesYell		= mod:NewShortFadesYell(CRIPPLING_BONDS_ID)
-local emberBondsCDTimer				= mod:NewCDTimer(EMBER_BONDS_CD, EMBER_BONDS_ID, nil, nil, nil, 2)
+local emberBondsWarn			= mod:NewSpecialWarningTarget(EMBER_BONDS_ID, nil, nil, nil, 1, 2)
+local emberBondsYell			= mod:NewYell(EMBER_BONDS_ID)
+local emberBondsMove			= mod:NewSpecialWarningMoveAway(EMBER_BONDS_ID, nil, nil, nil, 4, 2)
+local cripplingBondsFadesYell	= mod:NewShortFadesYell(CRIPPLING_BONDS_ID)
+local emberBondsCDTimer			= mod:NewCDTimer(EMBER_BONDS_CD, EMBER_BONDS_ID, nil, nil, nil, 2)
 
-local crumblingLairWarnGTFO			= mod:NewSpecialWarningMove(CRUMBLING_LAIR_ID, nil, nil, nil, 1, 8)
+local crumblingLairWarnGTFO = mod:NewSpecialWarningMove(CRUMBLING_LAIR_ID, nil, nil, nil, 1, 8)
 
-local lavaSlashWarnStack			= mod:NewStackAnnounce(LAVA_SLASH_ID, 2, nil, "Tank|Healer")
-local lavaSlashWarnHighStack		= mod:NewSpecialWarningStack(LAVA_SLASH_ID, nil, LAVA_SLASH_HIGHSTACK, nil, nil, 1, 6)
+local lavaSlashWarnStack		= mod:NewStackAnnounce(LAVA_SLASH_ID, 2, nil, "Tank|Healer")
+local lavaSlashWarnHighStack	= mod:NewSpecialWarningStack(LAVA_SLASH_ID, nil, LAVA_SLASH_HIGHSTACK, nil, nil, 1, 6)
 
-local overwhelmingUpheavalCDTimer	= mod:NewCDTimer(OVERWHELMING_UPHEAVAL_CD, OVERWHELMING_UPHEAVAL_ID, nil, nil, nil, 2)
-local overwhelmingUpheavalWarn		= mod:NewPhaseChangeAnnounce(2, nil, nil, nil, nil, nil, 2)
+local overwhelmingUpheavalCDTimer = mod:NewCDTimer(OVERWHELMING_UPHEAVAL_CD, OVERWHELMING_UPHEAVAL_ID, nil, nil, nil, 2)
+
+local phase1Warn = mod:NewPhaseAnnounce(1)
+local phase2Warn = mod:NewPhaseAnnounce(2)
 
 mod:AddRangeFrameOption(10, EMBER_BONDS_ID)
 mod:AddSetIconOption("SetIconOnEmberBonds", EMBER_BONDS_ID, true, false, {1,2,3,4,5,6})
 
 mod.vb.EmberBondsIcon = 1
+mod.vb.P2Counter = 0
+
+function mod:AnnouncePhase1()
+	self.vb.P2Counter = 0
+	phase1Warn:Show()
+	silenceCDTimer:Start()
+	emberBondsCDTimer:Start()
+	overwhelmingUpheavalCDTimer:Start(OVERWHELMING_UPHEAVAL_CD2)
+end
 
 function mod:OnCombatStart()
 	self.vb.EmberBondsIcon = 1
+	self.vb.P2Counter = 0
 	silenceCDTimer:Start()
-	silencePreWarn:ScheduleVoice(SILENCE_CD, "silencesoon")
 	emberBondsCDTimer:Start()
 	overwhelmingUpheavalCDTimer:Start()
 end
 
 function mod:SPELL_AURA_APPLIED(args)
 	if args.spellId == EMBER_BONDS_ID then
+		emberBondsCDTimer:Stop()
+
 		if self.Options.SetIconOnEmberBonds then
 			self:SetIcon(args.destName, self.vb.EmberBondsIcon)
 			self.vb.EmberBondsIcon = self.vb.EmberBondsIcon + 1
@@ -97,9 +114,6 @@ function mod:SPELL_AURA_APPLIED(args)
 		else
 			lavaSlashWarnStack:Show(args.destName, amount)
 		end
-	elseif args.spellId == OVERWHELMING_UPHEAVAL_ID then
-		overwhelmingUpheavalWarn:Show(OVERWHELMING_UPHEAVAL_NAME)
-		overwhelmingUpheavalWarn:Play("phasechange")
 	end
 end
 
@@ -114,6 +128,11 @@ function mod:SPELL_AURA_REMOVED(args)
 		if not emberBondsCDTimer:IsStarted() then
 			emberBondsCDTimer:Start()
 		end
+
+		if not silenceCDTimer:IsStarted() then
+			silenceCDTimer:Start()
+		end
+
 		if self.Options.SetIconOnEmberBonds then
 			self:SetIcon(args.destName, 0)
 			self.vb.EmberBondsIcon = 1
@@ -122,16 +141,11 @@ function mod:SPELL_AURA_REMOVED(args)
 		if args:IsPlayer() then
 			cripplingBondsFadesYell:Cancel()
 		end
-	elseif args.spellId == SILENCE_ID then
-		if not silenceCDTimer:IsStarted() then
-			silenceCDTimer:Start()
-			silencePreWarn:ScheduleVoice(SILENCE_CD, "silencesoon")
-		end
 	end
 end
 
 function mod:SPELL_PERIODIC_DAMAGE(_, _, _, destGUID, _, _, spellId, spellName)
-	if spellId == CRUMBLING_LAIR_ID and destGUID == UnitGUID("player") and self:AntiSpam(2, 1) then
+	if spellId == CRUMBLING_LAIR_ID and destGUID == UnitGUID("player") and self:AntiSpam(3, 1) then
 		crumblingLairWarnGTFO:Show()
 		crumblingLairWarnGTFO:Play("watchfeet")
 	end
@@ -141,7 +155,24 @@ mod.SPELL_PERIODIC_MISSED = mod.SPELL_PERIODIC_DAMAGE
 
 function mod:SPELL_CAST_START(args)
 	if args.spellId == SILENCE_ID then
-		silenceCDTimer:Restart()
-		silencePreWarn:ScheduleVoice(SILENCE_CD, "silencesoon")
+		silenceCDTimer:Stop()
+	elseif args.spellId == P2_MOLTEN_UPHEAVAL_ID then
+		self.vb.P2Counter = self.vb.P2Counter + 1
+		if self.vb.P2Counter >= 10 then
+			self:ScheduleMethod(P2_MOLTEN_UPHEAVAL_CAST_TIME, "AnnouncePhase1")
+		end
+	end
+end
+
+function mod:CHAT_MSG_MONSTER_YELL(msg)
+	local isPhase2 = msg == L.YellP2_1 or msg:find(L.YellP2_1) or
+		msg == L.YellP2_2 or msg:find(L.YellP2_2) or
+		msg == L.YellP2_3 or msg:find(L.YellP2_3) or
+		msg == L.YellP2_4 or msg:find(L.YellP2_4)
+	if isPhase2 then
+		phase2Warn:Show()
+		silenceCDTimer:Stop()
+		emberBondsCDTimer:Stop()
+		self.vb.P2Counter = 0
 	end
 end
