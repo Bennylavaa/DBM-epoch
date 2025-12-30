@@ -37,5 +37,7 @@ L:SetGeneralLocalization({
 L:SetMiscLocalization({
 	YellP2_1 = "The strength of the brood knows no bounds!",
 	YellP2_2 = "Children! Feed on these mortals!",
-	YellP3 = "It seems you'll need another lesson, mortals!"
+	YellP2_3 = "This meaningless exertion bores me. I'll incinerate you all from above!",
+	YellP1_1 = "It seems you'll need another lesson, mortals!",
+	YellP1_2 = "You shall pay for your insolence!"
 })

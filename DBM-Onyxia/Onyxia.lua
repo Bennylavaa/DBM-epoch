@@ -44,6 +44,10 @@ mod.vb.WarnedLand2 = false
 
 mod:AddSetIconOption("SetIconOnFireball", FIREBALL_ID, true, false, {1})
 
+local function IsPhaseYell(msg, phrase)
+	return msg == phrase or msg:find(phrase)
+end
+
 function mod:FireballTarget(targetName)
 	if not targetName then return end
 
@@ -80,9 +84,9 @@ function mod:SPELL_CAST_START(args)
 end
 
 function mod:CHAT_MSG_MONSTER_YELL(msg)
-	if msg == L.YellP2_1 or msg:find(L.YellP2_1) or msg == L.YellP2_2 or msg:find(L.YellP2_2) then
+	if IsPhaseYell(msg, L.YellP2_1) or IsPhaseYell(msg, L.YellP2_2) or IsPhaseYell(msg, L.YellP2_3) then
 		self:SendSync("Phase2")
-	elseif msg == L.YellP3 or msg:find(L.YellP3) then
+	elseif IsPhaseYell(msg, L.YellP1_1) or IsPhaseYell(msg, L.YellP1_2) then
 		self:SendSync("Phase1")
 	end
 end
@@ -127,12 +131,4 @@ function mod:OnSync(msg, guid, sender)
 	elseif msg == "Fireball" and sender and self:AntiSpam(3, 1) then
 		self:BossTargetScanner(guid, "FireballTarget", 0.3, 6)
 	end
-end
-
-function mod:debug()
-	deepBreathWarn:Show()
-	deepBreathCastTimer:Start()
-end
-function mod:debug2()
-	fireballWarn:Show("wtfblub")
 end
