@@ -15,7 +15,7 @@ local FIREBALL_ID = 18392
 mod:SetRevision("20251229153050")
 mod:SetCreatureID(45133)
 mod:RegisterCombat("combat")
-mod:SetUsedIcons(1)
+mod:SetUsedIcons(8)
 
 mod:RegisterEventsInCombat(
 	"SPELL_CAST_START 18435 18392 18351 17086 18564 18576 18584 18596 18609 18617",
@@ -42,7 +42,7 @@ mod.vb.WarnedFly2 = false
 mod.vb.WarnedLand1 = false
 mod.vb.WarnedLand2 = false
 
-mod:AddSetIconOption("SetIconOnFireball", FIREBALL_ID, true, false, {1})
+mod:AddSetIconOption("SetIconOnFireball", FIREBALL_ID, true, false, {8})
 
 local function IsPhaseYell(msg, phrase)
 	return msg == phrase or msg:find(phrase)
@@ -54,7 +54,7 @@ function mod:FireballTarget(targetName)
 	fireballWarn:Show(targetName)
 
 	if self.Options.SetIconOnFireball then
-		self:SetIcon(targetName, 1, 3)
+		self:SetIcon(targetName, 8, 3)
 	end
 
 	if targetName == UnitName("player") then
