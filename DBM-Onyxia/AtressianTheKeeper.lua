@@ -43,7 +43,7 @@ local IMPLODE_CAST_TIME = 6
 local IMPLODE_EXPLODE_CD = 25
 local IMPLODE_EXPLODE_CD2 = 60
 
-mod:SetRevision("20260101123050")
+mod:SetRevision("20260101133015")
 mod:SetCreatureID(45125)
 mod:SetUsedIcons(6, 8)
 
@@ -200,6 +200,11 @@ function mod:UNIT_HEALTH(uId)
 	end
 
 	magmaweaverHealth = UnitHealth(uId) / UnitHealthMax(uId) * 100.0
+	-- I'm not exactly sure how often this happens so just in case limiting it to 2 seconds
+	-- to prevent potential fps issues
+	if self:AntiSpam(2, 1) then
+		self:SendSync("MagmaweaverHealth", magmaweaverHealth)
+	end
 end
 
 function mod:UNIT_DIED(args)
@@ -209,5 +214,13 @@ function mod:UNIT_DIED(args)
 		if self.Options.InfoFrame then
 			DBM.InfoFrame:Hide()
 		end
+	end
+end
+
+function mod:OnSync(msg, health, sender)
+	if not self:IsInCombat() then return end
+
+	if msg == "MagmaweaverHealth" and sender then
+		magmaweaverHealth = health
 	end
 end
