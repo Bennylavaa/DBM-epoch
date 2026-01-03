@@ -12,7 +12,7 @@ local DEEP_BREATH_CAST_TIME = 4
 
 local FIREBALL_ID = 18392
 
-mod:SetRevision("20251230141710")
+mod:SetRevision("20260103175316")
 mod:SetCreatureID(45133)
 mod:RegisterCombat("combat")
 mod:SetUsedIcons(8)
@@ -90,7 +90,7 @@ end
 function mod:CHAT_MSG_MONSTER_YELL(msg)
 	if IsPhaseYell(msg, L.YellP2_1) or IsPhaseYell(msg, L.YellP2_2) or IsPhaseYell(msg, L.YellP2_3) then
 		self:SendSync("Phase2")
-	elseif IsPhaseYell(msg, L.YellP1_1) or IsPhaseYell(msg, L.YellP1_2) then
+	elseif IsPhaseYell(msg, L.YellP1_1) or IsPhaseYell(msg, L.YellP1_2) or IsPhaseYell(msg, L.YellP1_3) then
 		self:SendSync("Phase1")
 	end
 end

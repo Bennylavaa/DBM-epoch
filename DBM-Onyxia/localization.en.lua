@@ -43,5 +43,6 @@ L:SetMiscLocalization({
 	YellP2_2 = "Children! Feed on these mortals!",
 	YellP2_3 = "This meaningless exertion bores me. I'll incinerate you all from above!",
 	YellP1_1 = "It seems you'll need another lesson, mortals!",
-	YellP1_2 = "You shall pay for your insolence!"
+	YellP1_2 = "You shall pay for your insolence!",
+	YellP1_3 = "It seems I need to deal with you myself!"
 })
