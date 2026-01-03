@@ -1,13 +1,11 @@
 local mod	= DBM:NewMod("Atressian", "DBM-Onyxia")
 local L		= mod:GetLocalizedStrings()
 
--- todo
--- dragonkin info frame not working?
-
 -- local PYROBLAST_ID = 150038
 -- local PYROBLAST_CAST_TIME = 6
 
 local DRAGONKIN_SORCERY_ID = 150053
+local DRAGONKIN_SORCERY_WITH_DESC_ID = 150054
 local DRAGONKIN_SORCERY_CD = 90
 local DRAGONKIN_SORCERY_CD2 = 100
 
@@ -24,6 +22,7 @@ local DRAGONKIN_CID = 300065 -- Onyxian Magmaweaver
 
 local DRAGONKINS_RIGHT_ID = 150063
 local DRAGONKINS_RIGHT_ID2 = 150049
+local DRAGONKINS_RIGHT_WITH_DESC_ID = 150050
 local DRAGONKINS_RIGHT_CD = 47
 local DRAGONKINS_RIGHT_CAST_TIME = 5
 
@@ -43,7 +42,7 @@ local IMPLODE_CAST_TIME = 6
 local IMPLODE_EXPLODE_CD = 25
 local IMPLODE_EXPLODE_CD2 = 60
 
-mod:SetRevision("20260101133015")
+mod:SetRevision("20260103175316")
 mod:SetCreatureID(45125)
 mod:SetUsedIcons(6, 8)
 
@@ -57,8 +56,8 @@ mod:RegisterEventsInCombat(
 	"UNIT_DIED"
 )
 
-local manaGemsWarn				= mod:NewSpecialWarningSwitch(DRAGONKIN_SORCERY_ID, nil, nil, nil, 1, 2)
-local manaGemsTimer				= mod:NewCDTimer(DRAGONKIN_SORCERY_CD, DRAGONKIN_SORCERY_ID, nil, nil, nil, 1)
+local manaGemsWarn				= mod:NewSpecialWarningSwitch(DRAGONKIN_SORCERY_WITH_DESC_ID, nil, nil, nil, 1, 2)
+local manaGemsTimer				= mod:NewCDTimer(DRAGONKIN_SORCERY_CD, DRAGONKIN_SORCERY_WITH_DESC_ID, nil, nil, nil, 1)
 
 local summonDragonkinWarn		= mod:NewSpecialWarningSwitch(SUMMON_DRAGONKIN_ID, nil, nil, nil, 1, 2)
 local summonDragonkinTimer		= mod:NewCDTimer(SUMMON_DRAGONKIN_CD, SUMMON_DRAGONKIN_ID, nil, nil, nil, 1)
@@ -70,10 +69,10 @@ local collpaseLairCastTimer		= mod:NewCastTimer(COLLAPSE_LAIR_CAST_TIME, COLLAPS
 local collpaseLairWarn			= mod:NewSpecialWarningSpell(COLLAPSE_LAIR_ID, nil, nil, nil, 2, 2)
 
 local dragonkinsRightWarn		= mod:NewPhaseAnnounce(3, 2, nil, nil, nil, nil, nil, 2)
-local dragonkinsRightTimer		= mod:NewCDTimer(DRAGONKINS_RIGHT_CD, DRAGONKINS_RIGHT_ID, nil, nil, nil, 2)
-local dragonkinsRightCastTimer	= mod:NewCastTimer(DRAGONKINS_RIGHT_CAST_TIME, DRAGONKINS_RIGHT_ID, nil, nil, nil, 2)
+local dragonkinsRightTimer		= mod:NewCDTimer(DRAGONKINS_RIGHT_CD, DRAGONKINS_RIGHT_WITH_DESC_ID, nil, nil, nil, 2)
+local dragonkinsRightCastTimer	= mod:NewCastTimer(DRAGONKINS_RIGHT_CAST_TIME, DRAGONKINS_RIGHT_WITH_DESC_ID, nil, nil, nil, 2)
 
-local ritualFlamesTimer			= mod:NewCastTimer(RITUAL_FLAMES_TIMER, RITUAL_FLAMES_ID, nil, nil, nil, 2)
+-- local ritualFlamesTimer			= mod:NewCastTimer(RITUAL_FLAMES_TIMER, RITUAL_FLAMES_ID, nil, nil, nil, 2)
 
 local implodeSay				= mod:NewYell(IMPLODE_ID)
 local implodeWarn				= mod:NewTargetNoFilterAnnounce(IMPLODE_ID, 2)
@@ -81,7 +80,7 @@ local implodeCastTimer			= mod:NewCastTimer(IMPLODE_CAST_TIME, IMPLODE_ID, nil, 
 
 local explodeWarn				= mod:NewSpecialWarningSpell(EXPLODE_ID, nil, nil, nil, 2, 2)
 local explodeCastTimer			= mod:NewCastTimer(EXPLODE_CAST_TIME, EXPLODE_ID, nil, nil, nil, 2)
-local implodeExplodeTimer		= mod:NewCDTimer(IMPLODE_EXPLODE_CD, EXPLODE_ID, nil, nil, nil, 2)
+local implodeExplodeTimer		= mod:NewCDTimer(IMPLODE_EXPLODE_CD, EXPLODE_ID, L.ImplodeExplodeTimer, nil, nil, 2)
 
 local magmaweaverHealth = 0
 
@@ -129,6 +128,10 @@ function mod:OnCombatStart()
 end
 
 function mod:OnCombatEnd()
+	if self.Options.RangeFrame then
+		DBM.RangeCheck:Hide(true)
+	end
+
 	if self.Options.InfoFrame then
 		DBM.InfoFrame:Hide()
 	end

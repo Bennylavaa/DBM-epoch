@@ -25,6 +25,10 @@ L:SetGeneralLocalization({
 	name = "Atressian"
 })
 
+L:SetMiscLocalization({
+	ImplodeExplodeTimer = "Implode/Explode CD"
+})
+
 --------------
 --  Onyxia  --
 --------------
