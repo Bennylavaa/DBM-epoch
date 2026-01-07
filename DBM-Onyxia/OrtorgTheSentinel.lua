@@ -12,6 +12,9 @@ local CRIPPLING_BONDS_ID = 85595
 local CRUMBLING_LAIR_ID = 85592
 
 local LAVA_SLASH_ID = 85600
+local LAVA_SLASH_CD = 23
+local LAVA_SLASH_PULL_CD = 15
+local LAVA_SLASH_P2_CD = 12
 local LAVA_SLASH_HIGHSTACK = 2
 
 -- This is set to not log
@@ -22,7 +25,7 @@ local OVERWHELMING_UPHEAVAL_CD2 = 100
 local P2_MOLTEN_UPHEAVAL_ID = 85603
 local P2_MOLTEN_UPHEAVAL_CAST_TIME = 3.5
 
-mod:SetRevision("20260103175316")
+mod:SetRevision("20260107170028")
 mod:SetCreatureID(45136)
 mod:SetUsedIcons(1, 2, 3, 4, 5, 6)
 
@@ -51,8 +54,9 @@ local crumblingLairWarnGTFO = mod:NewSpecialWarningMove(CRUMBLING_LAIR_ID, nil, 
 
 local lavaSlashWarnStack		= mod:NewStackAnnounce(LAVA_SLASH_ID, 2, nil, "Tank|Healer")
 local lavaSlashWarnHighStack	= mod:NewSpecialWarningStack(LAVA_SLASH_ID, nil, LAVA_SLASH_HIGHSTACK, nil, nil, 1, 6)
+local lavaSlashCD				= mod:NewCDTimer(LAVA_SLASH_CD, LAVA_SLASH_ID, nil, nil, nil, 2)
 
-local overwhelmingUpheavalCDTimer	= mod:NewCDTimer(OVERWHELMING_UPHEAVAL_CD, OVERWHELMING_UPHEAVAL_ID, nil, nil, nil, 2)
+local overwhelmingUpheavalCDTimer	= mod:NewCDTimer(OVERWHELMING_UPHEAVAL_CD, OVERWHELMING_UPHEAVAL_ID, nil, nil, nil, 6)
 local phase2Counter					= mod:NewCountAnnounce(P2_MOLTEN_UPHEAVAL_ID, 2)
 
 local phase1Warn = mod:NewPhaseAnnounce(1)
@@ -69,6 +73,7 @@ function mod:AnnouncePhase1()
 	phase1Warn:Show()
 	silenceCDTimer:Start()
 	emberBondsCDTimer:Start()
+	lavaSlashCD:Start(LAVA_SLASH_P2_CD)
 	overwhelmingUpheavalCDTimer:Start(OVERWHELMING_UPHEAVAL_CD2)
 end
 
@@ -77,6 +82,7 @@ function mod:OnCombatStart()
 	self.vb.P2Counter = 0
 	silenceCDTimer:Start()
 	emberBondsCDTimer:Start()
+	lavaSlashCD:Start(LAVA_SLASH_PULL_CD)
 	overwhelmingUpheavalCDTimer:Start()
 end
 
@@ -104,6 +110,7 @@ function mod:SPELL_AURA_APPLIED(args)
 			cripplingBondsFadesYell:Countdown(args.spellId)
 		end
 	elseif args.spellId == LAVA_SLASH_ID then
+		lavaSlashCD:Start()
 		local amount = args.amount or 1
 		if amount >= LAVA_SLASH_HIGHSTACK then
 			if args:IsPlayer() then
